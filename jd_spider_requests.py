@@ -29,7 +29,6 @@ class SpiderSession:
     def __init__(self):
         self.cookies_dir_path = "./cookies/"
         self.user_agent = global_config.getRaw('config', 'DEFAULT_USER_AGENT')
-
         self.session = self._init_session()
 
     def _init_session(self):
@@ -268,7 +267,7 @@ class JdSeckill(object):
         self.spider_session.load_cookies_from_local()
 
         self.qrlogin = QrLogin(self.spider_session)
-
+        self.reserve_statue = False
         # 初始化信息
         self.sku_id = global_config.getRaw('config', 'sku_id')
         self.seckill_num = 2
@@ -330,6 +329,7 @@ class JdSeckill(object):
         多进程进行抢购
         work_count：进程数量
         """
+        logger.info("本次秒杀启动时间为：{}".format(self.timers.buy_time))
         with ProcessPoolExecutor(work_count) as pool:
             for i in range(work_count):
                 pool.submit(self.seckill)
@@ -338,7 +338,7 @@ class JdSeckill(object):
         """
         预约
         """
-        while True:
+        while not self.reserve_statue:
             try:
                 self.make_reserve()
             except Exception as e:
@@ -349,7 +349,7 @@ class JdSeckill(object):
         """
         抢购
         """
-        while True:
+        while self.timers.kill_not_out_time():
             try:
                 self.request_seckill_url()
                 while True:
@@ -358,6 +358,7 @@ class JdSeckill(object):
             except Exception as e:
                 logger.info('抢购发生异常，稍后继续执行！', e)
             wait_some_time()
+        logger.info('当前时间为：{}，抢购设定时间已经截止，抢购自动退出！'.format(self.timers.time_now()))
 
     def make_reserve(self):
         """商品预约"""
@@ -375,13 +376,14 @@ class JdSeckill(object):
         resp = self.session.get(url=url, params=payload, headers=headers)
         resp_json = parse_json(resp.text)
         reserve_url = resp_json.get('url')
-        self.timers.start()
+        # self.timers.start()
         while True:
             try:
                 self.session.get(url='https:' + reserve_url)
                 logger.info('预约成功，已获得抢购资格 / 您已成功预约过了，无需重复预约')
                 if global_config.getRaw('messenger', 'enable') == 'true':
                     success_message = "预约成功，已获得抢购资格 / 您已成功预约过了，无需重复预约"
+                    self.reserve_statue = True
                     send_wechat(success_message)
                 break
             except Exception as e:

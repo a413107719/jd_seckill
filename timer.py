@@ -65,3 +65,7 @@ class Timer(object):
 
 if __name__ == "__main__":
     testTimer = Timer()
+    testTimer.buy_time = datetime.strptime("2021-01-05 10:10:30.5", "%Y-%m-%d %H:%M:%S.%f")
+    testTimer.kill_time = timedelta(seconds=(150 + random.randint(10,30)),milliseconds=random.randint(100,1000))
+    while testTimer.kill_not_out_time():
+        print(testTimer.time_now())

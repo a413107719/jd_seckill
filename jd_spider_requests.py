@@ -352,7 +352,7 @@ class JdSeckill(object):
         while self.timers.kill_not_out_time():
             try:
                 self.request_seckill_url()
-                while True:
+                while self.timers.kill_not_out_time():
                     self.request_seckill_checkout_page()
                     self.submit_seckill_order()
             except Exception as e:

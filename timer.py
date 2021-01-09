@@ -15,8 +15,9 @@ class Timer(object):
         # '2018-09-28 22:45:50.000'
         self.timeNow = datetime.today()
         self.oldTime = datetime.strptime(global_config.getRaw('config','buy_time'), "%Y-%m-%d %H:%M:%S.%f")
-        self.setTime = datetime.strptime(datetime.strftime(self.timeNow,"%Y-%m-%d") + " 09:59:58.500", "%Y-%m-%d %H:%M:%S.%f") if self.oldTime<=self.timeNow else self.oldTime
-        self.buy_time = self.setTime - timedelta(seconds=random.randint(1, 3),milliseconds=random.randint(100,300))
+        self.setTime = datetime.strptime(datetime.strftime(self.timeNow,"%Y-%m-%d") + " 09:59:59.700", "%Y-%m-%d %H:%M:%S.%f") if self.oldTime<=self.timeNow else self.oldTime
+        # self.buy_time = self.setTime - timedelta(seconds=random.randint(1, 3),milliseconds=random.randint(100,300))
+        self.buy_time = self.setTime - timedelta(milliseconds=random.randint(100,300))
         self.buy_time_ms = int(time.mktime(self.buy_time.timetuple()) * 1000.0 + self.buy_time.microsecond / 1000)
         self.sleep_interval = sleep_interval
         self.diff_time = self.local_jd_time_diff()
